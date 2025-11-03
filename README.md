@@ -32,9 +32,3 @@ This project uses HTML Canvas to render each certificate and JSZip to bundle all
 | Excel Parsing    | XLSX.js               |
 | ZIP Creation     | JSZip                 |
 | Canvas Rendering | HTML5 Canvas API      |
-
-## Usage
-
-* Use here: 
-
-
