@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Certificate Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #c8d5c0 0%, #b8c9b0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #8b9d83 0%, #6b7c63 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .upload-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f5f7f4;
+            border-radius: 12px;
+            border: 2px dashed #8b9d83;
+        }
+        
+        .upload-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+        
+        .file-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #8b9d83;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .file-label:hover {
+            background: #6b7c63;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 157, 131, 0.4);
+        }
+        
+        .file-name {
+            margin-left: 15px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .preview-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+        
+        #previewCanvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            cursor: crosshair;
+        }
+        
+        .field-panel {
+            width: 350px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .font-preview {
+            padding: 8px;
+            margin-top: 5px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .field-panel h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .field-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .field-item.active {
+            border-color: #8b9d83;
+            background: #e8ede6;
+        }
+        
+        .field-item.disabled {
+            opacity: 0.5;
+        }
+        
+        .field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .field-header label {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .field-controls {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        .field-item.active .field-controls {
+            display: block;
+        }
+        
+        .control-group {
+            margin-bottom: 12px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .control-group select,
+        .control-group input[type="number"],
+        .control-group input[type="color"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+        
+        .color-picker-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .color-picker-wrapper input[type="color"] {
+            width: 60px;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .color-picker-wrapper input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        
+        .position-display {
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            color: #666;
+            text-align: center;
+            font-family: monospace;
+        }
+        
+        .generate-btn {
+            background: linear-gradient(135deg, #8b9d83 0%, #6b7c63 100%);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(139, 157, 131, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .preview-btn {
+            background: linear-gradient(135deg, #9ab592 0%, #7a9672 100%);
+        }
+
+        .preview-btn:hover:not(:disabled) {
+            box-shadow: 0 15px 35px rgba(154, 181, 146, 0.4);
+        }
+        
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(139, 157, 131, 0.4);
+        }
+        
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .instruction {
+            background: #f0f4ed;
+            color: #5a6952;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        
+        .drag-marker {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #8b9d83;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #8b9d83 0%, #6b7c63 100%);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📜 Bulk Certificate Generator</h1>
+            <p>Upload your template and data to generate personalized certificates instantly</p>
+        </div>
+        
+        <div class="content">
+            <div class="upload-section">
+                <h2>1. Upload Certificate Template</h2>
+                <div class="file-input-wrapper">
+                    <input type="file" id="templateInput" accept="image/png,image/jpeg,image/jpg">
+                    <label for="templateInput" class="file-label">Choose Template Image</label>
+                    <span class="file-name" id="templateName">No file chosen</span>
+                </div>
+            </div>
+            
+            <div class="upload-section">
+                <h2>2. Upload Data File (Excel/ODS)</h2>
+                <div class="file-input-wrapper">
+                    <input type="file" id="dataInput" accept=".xlsx,.xls,.ods">
+                    <label for="dataInput" class="file-label">Choose Data File</label>
+                    <span class="file-name" id="dataName">No file chosen</span>
+                </div>
+                <div id="columnInfo" style="margin-top: 15px; color: #666;"></div>
+            </div>
+            
+            <div class="upload-section" id="configSection" style="display: none;">
+                <h2>3. Configure Fields</h2>
+                <div class="instruction">
+                    💡 <strong>Click on any field below</strong> to select it, then <strong>click on the certificate</strong> to position it. Customize font, size, and color for each field.
+                </div>
+                
+                <div class="preview-container">
+                    <div class="canvas-container">
+                        <canvas id="previewCanvas"></canvas>
+                    </div>
+                    
+                    <div class="field-panel">
+                        <h3>Fields & Styling</h3>
+                        <div id="fieldList"></div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="generate-btn preview-btn" id="previewBtn">Preview & Download Sample</button>
+                    <button class="generate-btn" id="generateBtn">Generate & Download All Certificates</button>
+                </div>
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+            </div>
+            
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        let templateImage = null;
+        let dataRows = [];
+        let columns = [];
+        let fieldConfig = [];
+        let activeFieldIndex = -1;
+
+        const templateInput = document.getElementById('templateInput');
+        const dataInput = document.getElementById('dataInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const previewBtn = document.getElementById('previewBtn');
+        const canvas = document.getElementById('previewCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const fonts = [
+            { name: 'Arial', value: '"Arial", "Helvetica", sans-serif', weight: 'normal', style: 'normal' },
+            { name: 'Calibri', value: '"Calibri", "Candara", "Segoe", "Segoe UI", "Optima", sans-serif', weight: 'normal', style: 'normal' },
+            { name: 'Times New Roman', value: '"Times New Roman", Times, Baskerville, Georgia, serif', weight: 'normal', style: 'normal' },
+            { name: 'Bookman', value: '"Bookman Old Style", "Goudy Old Style", Garamond, "Big Caslon", "Times New Roman", serif', weight: 'normal', style: 'normal' },
+            { name: 'Brush Script', value: '"Brush Script MT", cursive', weight: 'normal', style: 'normal' }
+        ];
+
+        templateInput.addEventListener('change', handleTemplateUpload);
+        dataInput.addEventListener('change', handleDataUpload);
+        canvas.addEventListener('click', handleCanvasClick);
+        generateBtn.addEventListener('click', generateCertificates);
+        previewBtn.addEventListener('click', previewAndDownload);
+
+        function handleTemplateUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('templateName').textContent = file.name;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    templateImage = img;
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    drawCanvas();
+                    checkReady();
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleDataUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('dataName').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                
+                if (jsonData.length < 2) {
+                    showStatus('Please provide a file with headers and at least one row of data', 'error');
+                    return;
+                }
+
+                columns = jsonData[0];
+                dataRows = jsonData.slice(1).filter(row => row.some(cell => cell));
+                
+                document.getElementById('columnInfo').textContent = 
+                    `✓ Found ${columns.length} columns and ${dataRows.length} records`;
+                
+                createFieldList();
+                checkReady();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function createFieldList() {
+            const fieldList = document.getElementById('fieldList');
+            fieldList.innerHTML = '';
+            fieldConfig = [];
+
+            columns.forEach((col, idx) => {
+                const config = {
+                    column: idx,
+                    name: col || `Column ${idx + 1}`,
+                    enabled: idx === 0,
+                    x: canvas.width / 2,
+                    y: 200 + (idx * 60),
+                    fontSize: 48,
+                    color: '#000000',
+                    font: fonts[0].value,
+                    fontWeight: fonts[0].weight,
+                    fontStyle: fonts[0].style,
+                    align: 'center'
+                };
+                fieldConfig.push(config);
+
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = `field-item ${config.enabled ? '' : 'disabled'}`;
+                fieldDiv.onclick = () => selectField(idx);
+                
+                fieldDiv.innerHTML = `
+                    <div class="field-header">
+                        <label>
+                            <input type="checkbox" ${config.enabled ? 'checked' : ''} 
+                                   onclick="event.stopPropagation(); toggleField(${idx}, this.checked)">
+                            ${config.name}
+                        </label>
+                    </div>
+                    <div class="position-display">Position: <span id="pos-${idx}">Click to place</span></div>
+                    <div class="field-controls">
+                        <div class="control-group">
+                            <label>Font Family</label>
+                            <select id="fontSelect-${idx}" onchange="updateFont(${idx}, this.value)">
+                                ${fonts.map((f, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${f.name}</option>`).join('')}
+                            </select>
+                            <div class="font-preview" id="fontPreview-${idx}" style="font-family: '${config.font}';">Sample Text</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Font Size</label>
+                            <input type="number" value="${config.fontSize}" min="10" max="200"
+                                   onchange="updateConfig(${idx}, 'fontSize', parseInt(this.value))">
+                        </div>
+                        <div class="control-group">
+                            <label>Text Alignment</label>
+                            <select onchange="updateConfig(${idx}, 'align', this.value)">
+                                <option value="left">Left</option>
+                                <option value="center" selected>Center</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Text Color</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" value="${config.color}" 
+                                       onchange="updateConfig(${idx}, 'color', this.value); this.nextElementSibling.value = this.value">
+                                <input type="text" value="${config.color}" 
+                                       onchange="updateConfig(${idx}, 'color', this.value); this.previousElementSibling.value = this.value">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                fieldList.appendChild(fieldDiv);
+                updatePositionDisplay(idx);
+            });
+
+            if (fieldConfig.length > 0) {
+                selectField(0);
+            }
+        }
+
+        function selectField(idx) {
+            activeFieldIndex = idx;
+            document.querySelectorAll('.field-item').forEach((el, i) => {
+                el.classList.toggle('active', i === idx);
+            });
+            drawCanvas();
+        }
+
+        function toggleField(idx, enabled) {
+            fieldConfig[idx].enabled = enabled;
+            document.querySelectorAll('.field-item')[idx].classList.toggle('disabled', !enabled);
+            drawCanvas();
+        }
+
+        function updateConfig(idx, prop, value) {
+            fieldConfig[idx][prop] = value;
+            drawCanvas();
+        }
+
+        function updateFont(idx, fontIdx) {
+            const selectedFont = fonts[fontIdx];
+            fieldConfig[idx].font = selectedFont.value;
+            fieldConfig[idx].fontWeight = selectedFont.weight;
+            fieldConfig[idx].fontStyle = selectedFont.style;
+            
+            const preview = document.getElementById(`fontPreview-${idx}`);
+            if (preview) {
+                preview.style.fontFamily = selectedFont.value;
+                preview.style.fontWeight = selectedFont.weight;
+                preview.style.fontStyle = selectedFont.style;
+            }
+            
+            drawCanvas();
+        }
+
+        function handleCanvasClick(e) {
+            if (activeFieldIndex === -1) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            fieldConfig[activeFieldIndex].x = Math.round(x);
+            fieldConfig[activeFieldIndex].y = Math.round(y);
+            
+            updatePositionDisplay(activeFieldIndex);
+            drawCanvas();
+        }
+
+        function updatePositionDisplay(idx) {
+            const display = document.getElementById(`pos-${idx}`);
+            if (display) {
+                display.textContent = `X: ${fieldConfig[idx].x}, Y: ${fieldConfig[idx].y}`;
+            }
+        }
+
+        function drawCanvas() {
+            if (!templateImage) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(templateImage, 0, 0);
+            
+            if (dataRows.length === 0) return;
+            
+            const sampleRow = dataRows[0];
+            fieldConfig.forEach((config, idx) => {
+                if (config.enabled && sampleRow[idx]) {
+                    // Set font with weight and style - use generic family names for better compatibility
+                    const fontString = `${config.fontStyle} ${config.fontWeight} ${config.fontSize}px ${config.font}`;
+                    ctx.font = fontString;
+                    ctx.fillStyle = config.color;
+                    ctx.textAlign = config.align;
+                    ctx.fillText(String(sampleRow[idx]), config.x, config.y);
+                    
+                    // Draw marker for active field
+                    if (idx === activeFieldIndex) {
+                        ctx.strokeStyle = '#8b9d83';
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([5, 5]);
+                        const metrics = ctx.measureText(String(sampleRow[idx]));
+                        const textHeight = config.fontSize;
+                        let textX = config.x;
+                        
+                        if (config.align === 'center') textX -= metrics.width / 2;
+                        else if (config.align === 'right') textX -= metrics.width;
+                        
+                        ctx.strokeRect(textX - 5, config.y - textHeight + 5, metrics.width + 10, textHeight + 10);
+                        ctx.setLineDash([]);
+                    }
+                }
+            });
+        }
+
+        function checkReady() {
+            if (templateImage && dataRows.length > 0) {
+                document.getElementById('configSection').style.display = 'block';
+                drawCanvas();
+            }
+        }
+
+        async function generateCertificates() {
+            if (!templateImage || dataRows.length === 0) return;
+
+            generateBtn.disabled = true;
+            previewBtn.disabled = true;
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            progressBar.style.display = 'block';
+
+            showStatus(`Generating ${dataRows.length} certificates...`, 'info');
+
+            const zip = new JSZip();
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+
+            for (let i = 0; i < dataRows.length; i++) {
+                const row = dataRows[i];
+                
+                tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                tempCtx.drawImage(templateImage, 0, 0);
+
+                fieldConfig.forEach((config, idx) => {
+                    if (config.enabled && row[idx]) {
+                        tempCtx.font = `${config.fontStyle} ${config.fontWeight} ${config.fontSize}px ${config.font}`;
+                        tempCtx.fillStyle = config.color;
+                        tempCtx.textAlign = config.align;
+                        tempCtx.fillText(String(row[idx]), config.x, config.y);
+                    }
+                });
+
+                const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, 'image/png'));
+                const fileName = `certificate_${sanitizeFilename(row[0] || (i + 1))}.png`;
+                zip.file(fileName, blob);
+
+                const progress = Math.round(((i + 1) / dataRows.length) * 100);
+                progressFill.style.width = progress + '%';
+                progressFill.textContent = progress + '%';
+            }
+
+            showStatus('Creating ZIP file...', 'info');
+            const zipBlob = await zip.generateAsync({type: 'blob'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(zipBlob);
+            link.download = `certificates_${Date.now()}.zip`;
+            link.click();
+
+            showStatus(`Successfully generated and downloaded ${dataRows.length} certificates!`, 'success');
+            generateBtn.disabled = false;
+            previewBtn.disabled = false;
+            
+            setTimeout(() => {
+                progressBar.style.display = 'none';
+                progressFill.style.width = '0%';
+            }, 2000);
+        }
+
+        async function previewAndDownload() {
+            if (!templateImage || dataRows.length === 0) return;
+
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+
+            const row = dataRows[0];
+            
+            tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+            tempCtx.drawImage(templateImage, 0, 0);
+
+            fieldConfig.forEach((config, idx) => {
+                if (config.enabled && row[idx]) {
+                    tempCtx.font = `${config.fontStyle} ${config.fontWeight} ${config.fontSize}px ${config.font}`;
+                    tempCtx.fillStyle = config.color;
+                    tempCtx.textAlign = config.align;
+                    tempCtx.fillText(String(row[idx]), config.x, config.y);
+                }
+            });
+
+            tempCanvas.toBlob(blob => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `certificate_preview_${sanitizeFilename(row[0])}.png`;
+                link.click();
+                showStatus('Preview certificate downloaded!', 'success');
+            }, 'image/png');
+        }
+
+        function sanitizeFilename(name) {
+            return String(name).replace(/[^a-z0-9_\-]/gi, '_');
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
