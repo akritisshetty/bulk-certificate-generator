@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulk Certificate Generator</title>
+    <title>Certificate Tools</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -12,14 +12,14 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #c8d5c0 0%, #b8c9b0 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -28,28 +28,81 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
-        
+
+        /* ── HEADER ── */
         .header {
             background: linear-gradient(135deg, #8b9d83 0%, #6b7c63 100%);
             color: white;
             padding: 30px;
             text-align: center;
         }
-        
+
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
         }
-        
+
         .header p {
             opacity: 0.9;
             font-size: 1.1em;
         }
-        
+
+        /* ── TOOL SWITCHER NAV ── */
+        .tool-nav {
+            display: flex;
+            background: #f0f4ed;
+            border-bottom: 2px solid #d4ddd0;
+        }
+
+        .tool-tab {
+            flex: 1;
+            padding: 16px 24px;
+            border: none;
+            background: transparent;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            color: #6b7c63;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tool-tab:hover {
+            background: #e4ece0;
+            color: #4a5c42;
+        }
+
+        .tool-tab.active {
+            color: #4a5c42;
+            border-bottom-color: #8b9d83;
+            background: white;
+        }
+
+        .tool-tab .tab-icon {
+            font-size: 1.2em;
+        }
+
+        /* ── TOOL PANELS ── */
+        .tool-panel {
+            display: none;
+        }
+
+        .tool-panel.active {
+            display: block;
+        }
+
+        /* ════════════════════════════════════════════
+           PANEL 1: BULK CERTIFICATE GENERATOR
+        ════════════════════════════════════════════ */
         .content {
             padding: 40px;
         }
-        
+
         .upload-section {
             margin-bottom: 30px;
             padding: 25px;
@@ -57,22 +110,22 @@
             border-radius: 12px;
             border: 2px dashed #8b9d83;
         }
-        
+
         .upload-section h2 {
             color: #333;
             margin-bottom: 15px;
             font-size: 1.3em;
         }
-        
+
         .file-input-wrapper {
             position: relative;
             margin: 15px 0;
         }
-        
+
         .file-input-wrapper input[type="file"] {
             display: none;
         }
-        
+
         .file-label {
             display: inline-block;
             padding: 12px 30px;
@@ -83,26 +136,26 @@
             transition: all 0.3s;
             font-weight: 600;
         }
-        
+
         .file-label:hover {
             background: #6b7c63;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(139, 157, 131, 0.4);
         }
-        
+
         .file-name {
             margin-left: 15px;
             color: #666;
             font-style: italic;
         }
-        
+
         .preview-container {
             margin-top: 20px;
             display: flex;
             gap: 30px;
             align-items: flex-start;
         }
-        
+
         .canvas-container {
             flex: 1;
             position: relative;
@@ -111,14 +164,14 @@
             overflow: hidden;
             background: #f5f5f5;
         }
-        
+
         #previewCanvas {
             max-width: 100%;
             height: auto;
             display: block;
             cursor: crosshair;
         }
-        
+
         .field-panel {
             width: 350px;
             background: white;
@@ -137,13 +190,13 @@
             border-radius: 4px;
             text-align: center;
         }
-        
+
         .field-panel h3 {
             margin-bottom: 15px;
             color: #333;
             font-size: 1.1em;
         }
-        
+
         .field-item {
             background: #f8f9fa;
             padding: 15px;
@@ -153,23 +206,23 @@
             transition: all 0.3s;
             cursor: pointer;
         }
-        
+
         .field-item.active {
             border-color: #8b9d83;
             background: #e8ede6;
         }
-        
+
         .field-item.disabled {
             opacity: 0.5;
         }
-        
+
         .field-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
         }
-        
+
         .field-header label {
             font-weight: 600;
             color: #333;
@@ -177,20 +230,20 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .field-controls {
             display: none;
             margin-top: 15px;
         }
-        
+
         .field-item.active .field-controls {
             display: block;
         }
-        
+
         .control-group {
             margin-bottom: 12px;
         }
-        
+
         .control-group label {
             display: block;
             font-size: 0.85em;
@@ -198,7 +251,7 @@
             margin-bottom: 5px;
             font-weight: 500;
         }
-        
+
         .control-group select,
         .control-group input[type="number"],
         .control-group input[type="color"] {
@@ -208,27 +261,27 @@
             border-radius: 6px;
             font-size: 0.95em;
         }
-        
+
         .color-picker-wrapper {
             display: flex;
             gap: 10px;
             align-items: center;
         }
-        
+
         .color-picker-wrapper input[type="color"] {
             width: 60px;
             height: 40px;
             border: none;
             cursor: pointer;
         }
-        
+
         .color-picker-wrapper input[type="text"] {
             flex: 1;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 6px;
         }
-        
+
         .position-display {
             background: white;
             padding: 8px;
@@ -238,7 +291,7 @@
             text-align: center;
             font-family: monospace;
         }
-        
+
         .generate-btn {
             background: linear-gradient(135deg, #8b9d83 0%, #6b7c63 100%);
             color: white;
@@ -270,17 +323,17 @@
         .preview-btn:hover:not(:disabled) {
             box-shadow: 0 15px 35px rgba(154, 181, 146, 0.4);
         }
-        
+
         .generate-btn:hover:not(:disabled) {
             transform: translateY(-3px);
             box-shadow: 0 15px 35px rgba(139, 157, 131, 0.4);
         }
-        
+
         .generate-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        
+
         .status {
             margin-top: 20px;
             padding: 15px;
@@ -289,22 +342,11 @@
             font-weight: 600;
             display: none;
         }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-        
+
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error   { background: #f8d7da; color: #721c24; }
+        .status.info    { background: #d1ecf1; color: #0c5460; }
+
         .instruction {
             background: #f0f4ed;
             color: #5a6952;
@@ -313,7 +355,7 @@
             margin-bottom: 15px;
             font-size: 0.9em;
         }
-        
+
         .drag-marker {
             position: absolute;
             width: 12px;
@@ -349,6 +391,348 @@
             font-size: 0.9em;
         }
 
+        /* ════════════════════════════════════════════
+           PANEL 2: SIGNATURE STUDIO (restyled)
+        ════════════════════════════════════════════ */
+        .sig-workspace {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 0;
+            min-height: 680px;
+        }
+
+        /* Sidebar */
+        .sig-sidebar {
+            background: #f5f7f4;
+            border-right: 1px solid #d4ddd0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sig-sidebar-section {
+            padding: 24px;
+            border-bottom: 1px solid #d4ddd0;
+        }
+        .sig-sidebar-section:last-child { border-bottom: none; }
+
+        .sig-section-label {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #4a5c42;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sig-section-label .num {
+            background: #8b9d83;
+            color: white;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            font-size: 0.72rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Upload zone */
+        .sig-upload-zone {
+            border: 2px dashed #8b9d83;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        .sig-upload-zone:hover, .sig-upload-zone.dragover {
+            border-color: #6b7c63;
+            background: #f0f4ed;
+        }
+        .sig-upload-zone input { display: none; }
+        .sig-upload-zone .sig-uz-icon { font-size: 28px; margin-bottom: 6px; }
+        .sig-upload-zone .sig-uz-hint {
+            font-size: 0.78rem;
+            color: #888;
+            margin-top: 4px;
+        }
+        .sig-upload-zone .sig-uz-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .sig-upload-zone.has-file {
+            border-color: #6b7c63;
+            background: #edf3eb;
+        }
+
+        /* Signature cards */
+        .sig-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .sig-card {
+            background: white;
+            border: 1px solid #d4ddd0;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+        .sig-card.active {
+            border-color: #8b9d83;
+            box-shadow: 0 0 0 3px rgba(139,157,131,0.2);
+        }
+
+        .sig-card-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sig-thumb {
+            width: 64px; height: 36px;
+            object-fit: contain;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background: white;
+            flex-shrink: 0;
+        }
+        .sig-meta { flex: 1; min-width: 0; }
+        .sig-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #333;
+        }
+        .sig-pos {
+            font-size: 0.72rem;
+            color: #999;
+            margin-top: 1px;
+            font-family: monospace;
+        }
+
+        .sig-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .sig-controls label { font-size: 0.72rem; color: #666; display: block; margin-bottom: 2px; font-weight: 500; }
+        .sig-controls input[type="number"] {
+            width: 100%;
+            padding: 5px 8px;
+            border: 1px solid #d4ddd0;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            background: #f5f7f4;
+        }
+        .sig-controls input[type="number"]:focus {
+            outline: none;
+            border-color: #8b9d83;
+        }
+
+        .sig-btn-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 2px;
+        }
+        .sig-btn-row button {
+            flex: 1;
+            padding: 6px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #d4ddd0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .sig-btn-row button:hover { background: #f0f4ed; }
+        .sig-btn-row button.danger { color: #c0392b; border-color: #e8c6c2; }
+        .sig-btn-row button.danger:hover { background: #fdf0ee; }
+        .sig-btn-row button.place { color: #4a5c42; border-color: #8b9d83; font-weight: 600; }
+        .sig-btn-row button.place:hover { background: #edf3eb; }
+
+        /* Add signature zone */
+        .add-sig-zone {
+            border: 2px dashed #b8cdb3;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            font-size: 0.85rem;
+            color: #6b7c63;
+            font-weight: 600;
+            display: block;
+            margin-top: 10px;
+        }
+        .add-sig-zone:hover { background: #edf3eb; border-color: #8b9d83; }
+        .add-sig-zone input { display: none; }
+
+        /* Action area */
+        .sig-action-area { padding: 24px; }
+
+        .sig-btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #8b9d83 0%, #6b7c63 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(139,157,131,0.3);
+        }
+        .sig-btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139,157,131,0.4);
+        }
+        .sig-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .sig-btn-secondary {
+            width: 100%;
+            padding: 11px;
+            background: transparent;
+            color: #6b7c63;
+            border: 1.5px solid #b8cdb3;
+            border-radius: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        .sig-btn-secondary:hover:not(:disabled) { background: #f0f4ed; border-color: #8b9d83; }
+        .sig-btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Canvas area */
+        .sig-canvas-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 32px;
+            overflow: auto;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 24px, rgba(139,157,131,0.05) 24px, rgba(139,157,131,0.05) 25px),
+                repeating-linear-gradient(90deg, transparent, transparent 24px, rgba(139,157,131,0.05) 24px, rgba(139,157,131,0.05) 25px);
+        }
+
+        .sig-canvas-wrapper {
+            position: relative;
+            display: inline-block;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 4px;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        #mainCanvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .sig-canvas-hint {
+            margin-top: 16px;
+            font-size: 0.8rem;
+            color: #999;
+            letter-spacing: 0.04em;
+            text-align: center;
+        }
+
+        /* Mode badge */
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #8b9d83;
+            color: white;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .mode-badge.active { opacity: 1; }
+        .mode-badge .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #d4f0c8;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* Signature overlay handles */
+        .sig-handle {
+            position: absolute;
+            border: 2px solid #8b9d83;
+            border-radius: 3px;
+            cursor: move;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            background: rgba(255,255,255,0.1);
+            transition: border-color 0.15s;
+        }
+        .sig-handle:hover, .sig-handle.active { border-color: #4a5c42; border-width: 2.5px; }
+        .sig-handle .resize-handle {
+            position: absolute;
+            bottom: -5px; right: -5px;
+            width: 10px; height: 10px;
+            background: #8b9d83;
+            border-radius: 2px;
+            cursor: se-resize;
+        }
+        .sig-handle .label-tag {
+            position: absolute;
+            top: -22px; left: 0;
+            background: #4a5c42;
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px 4px 0 0;
+            white-space: nowrap;
+        }
+
+        /* Status for signature tool */
+        #sigStatus {
+            margin-top: 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 10px 16px;
+            border-radius: 8px;
+            display: none;
+            text-align: center;
+        }
+        #sigStatus.success { background: #d4edda; color: #155724; display: block; }
+        #sigStatus.error   { background: #f8d7da; color: #721c24; display: block; }
+        #sigStatus.info    { background: #d1ecf1; color: #0c5460; display: block; }
+
+        /* Empty state */
+        .sig-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 400px;
+            text-align: center;
+            color: #bbb;
+        }
+        .sig-empty-state .big-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
+        .sig-empty-state p { font-size: 0.9rem; max-width: 260px; line-height: 1.5; color: #aaa; }
+
+        /* ── SHARED FOOTER ── */
         .footer {
             background: #f5f7f4;
             padding: 20px;
@@ -357,15 +741,41 @@
             font-size: 0.95em;
             border-top: 1px solid #e0e0e0;
         }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c4d0be; border-radius: 3px; }
+
+        @media (max-width: 768px) {
+            .sig-workspace { grid-template-columns: 1fr; }
+            .sig-sidebar { max-height: 55vh; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📜 Bulk Certificate Generator</h1>
-            <p>Upload your template and data to generate personalized certificates instantly</p>
-        </div>
-        
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>📜 Certificate Tools</h1>
+        <p>Generate bulk certificates or add signatures to individual certificates — all in your browser</p>
+    </div>
+
+    <!-- TOOL SWITCHER NAV -->
+    <div class="tool-nav">
+        <button class="tool-tab active" onclick="switchTool('generator')" id="tab-generator">
+            <span class="tab-icon">🗂️</span> Bulk Certificate Generator
+        </button>
+        <button class="tool-tab" onclick="switchTool('signature')" id="tab-signature">
+            <span class="tab-icon">✍️</span> Certificate Signature Studio
+        </button>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 1: BULK CERTIFICATE GENERATOR
+    ══════════════════════════════════════ -->
+    <div class="tool-panel active" id="panel-generator">
         <div class="content">
             <div class="upload-section">
                 <h2>1. Upload Certificate Template</h2>
@@ -375,7 +785,7 @@
                     <span class="file-name" id="templateName">No file chosen</span>
                 </div>
             </div>
-            
+
             <div class="upload-section">
                 <h2>2. Upload Data File (Excel/ODS)</h2>
                 <div class="file-input-wrapper">
@@ -385,557 +795,886 @@
                 </div>
                 <div id="columnInfo" style="margin-top: 15px; color: #666;"></div>
             </div>
-            
+
             <div class="upload-section" id="configSection" style="display: none;">
                 <h2>3. Configure Fields</h2>
                 <div class="instruction">
                     💡 <strong>Click on any field below</strong> to select it, then <strong>click on the certificate</strong> to position it. Customize font, size, and color for each field.
                 </div>
-                
+
                 <div class="preview-container">
                     <div class="canvas-container">
                         <canvas id="previewCanvas"></canvas>
                     </div>
-                    
                     <div class="field-panel">
-                        <h3>Fields & Styling</h3>
+                        <h3>Fields &amp; Styling</h3>
                         <div id="fieldList"></div>
                     </div>
                 </div>
-                
+
                 <div class="button-group">
-                    <button class="generate-btn preview-btn" id="previewBtn">Preview & Download Sample</button>
-                    <button class="generate-btn" id="generateBtn">Generate & Download All Certificates</button>
+                    <button class="generate-btn preview-btn" id="previewBtn">Preview &amp; Download Sample</button>
+                    <button class="generate-btn" id="generateBtn">Generate &amp; Download All Certificates</button>
                 </div>
                 <div class="progress-bar" id="progressBar">
                     <div class="progress-fill" id="progressFill">0%</div>
                 </div>
             </div>
-            
+
             <div id="status"></div>
-        </div>
-        
-         <div class="footer">
-            Built by <a href="https://github.com/akritisshetty/" target="_blank" style="color: #6b7c63; text-decoration: none; font-weight: 600; transition: color 0.3s;">Akriti S Shetty</a> ☕
         </div>
     </div>
 
-    <script>
-        let templateImage = null;
-        let dataRows = [];
-        let columns = [];
-        let fieldConfig = [];
-        let activeFieldIndex = -1;
+    <!-- ══════════════════════════════════════
+         PANEL 2: SIGNATURE STUDIO
+    ══════════════════════════════════════ -->
+    <div class="tool-panel" id="panel-signature">
+        <div class="sig-workspace">
 
-        const templateInput = document.getElementById('templateInput');
-        const dataInput = document.getElementById('dataInput');
-        const generateBtn = document.getElementById('generateBtn');
-        const previewBtn = document.getElementById('previewBtn');
-        const canvas = document.getElementById('previewCanvas');
-        const ctx = canvas.getContext('2d');
+            <!-- SIDEBAR -->
+            <div class="sig-sidebar">
 
-        const fonts = [
-            { name: 'Arial', value: '"Arial", "Helvetica", sans-serif', weight: 'normal', style: 'normal' },
-            { name: 'Calibri', value: '"Calibri", "Candara", "Segoe", "Segoe UI", "Optima", sans-serif', weight: 'normal', style: 'normal' },
-            { name: 'Times New Roman', value: '"Times New Roman", Times, Baskerville, Georgia, serif', weight: 'normal', style: 'normal' },
-            { name: 'Bookman', value: '"Bookman Old Style", "Goudy Old Style", Garamond, "Big Caslon", "Times New Roman", serif', weight: 'normal', style: 'normal' },
-            { name: 'Brush Script', value: '"Brush Script MT", cursive', weight: 'normal', style: 'normal' }
-        ];
-
-        templateInput.addEventListener('change', handleTemplateUpload);
-        dataInput.addEventListener('change', handleDataUpload);
-        canvas.addEventListener('click', handleCanvasClick);
-        generateBtn.addEventListener('click', generateCertificates);
-        previewBtn.addEventListener('click', previewAndDownload);
-
-        // ─── DATE HANDLING ────────────────────────────────────────────────────────
-        // Excel stores dates as serial numbers (days since 1900-01-00, with a
-        // deliberate off-by-one Lotus bug for dates after 1900-02-28).
-        // XLSX.js with cellDates:false returns those raw serials.
-        // We detect them via the cell's numFmt string and convert here.
-
-        // Common Excel number-format codes that indicate a date cell.
-        // The list covers built-in IDs 14-17 and 22, plus the most common
-        // custom patterns. We match on the *raw* format string stored in the
-        // file, lowercased for comparison.
-        const DATE_FMT_PATTERNS = [
-            /\byyyy\b/, /\byy\b/, /\bdd\b/, /\bd\b(?!e)/,   // year / day tokens
-            /\bmm\b/, /\bm\b(?!s)/,                          // month (not milliseconds)
-            /\bmonth\b/
-        ];
-
-        function looksLikeDateFmt(fmt) {
-            if (!fmt) return false;
-            const f = fmt.toLowerCase();
-            // Skip pure-time formats like "hh:mm:ss"
-            if (/^[h\[\]hms:\.ap" ]+$/i.test(f)) return false;
-            return DATE_FMT_PATTERNS.some(p => p.test(f));
-        }
-
-        // Convert an Excel serial number to a JS Date.
-        function excelSerialToDate(serial) {
-            // Excel's epoch is Dec 30 1899 (not Jan 1 1900) because of the
-            // Lotus 1-2-3 leap-year bug (Excel treats 1900 as a leap year,
-            // inserting a phantom day 60 = Feb 29 1900).
-            const MS_PER_DAY = 86400000;
-            // Date(0) = Jan 1 1970; Excel day 1 = Jan 1 1900 = JS -2209161600000
-            const EXCEL_EPOCH_MS = -2209161600000; // new Date(1900,0,1) but as ms
-            // Offset: serial 1 → Jan 1 1900, serial 60 → phantom Feb 29 1900
-            // For serials > 60 we subtract 1 extra day to skip the phantom.
-            const adjusted = serial > 60 ? serial - 1 : serial;
-            return new Date(EXCEL_EPOCH_MS + (adjusted - 1) * MS_PER_DAY);
-        }
-
-        // Format a JS Date according to a simplified Excel numFmt string.
-        // We support the tokens actually used in practice for certificate data.
-        function formatDateByFmt(date, fmt) {
-            if (!date || isNaN(date.getTime())) return '';
-
-            const d  = date.getDate();
-            const m  = date.getMonth() + 1;   // 1-based
-            const yy = String(date.getFullYear()).slice(-2);
-            const yyyy = date.getFullYear();
-
-            // Map month number → names
-            const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun',
-                                  'Jul','Aug','Sep','Oct','Nov','Dec'];
-            const MONTH_LONG  = ['January','February','March','April','May','June',
-                                  'July','August','September','October','November','December'];
-
-            // Process the format string token by token (simple left-to-right scan).
-            // We handle: yyyy, yy, mmmm, mmm, mm, m, dd, d, and quoted literals.
-            let result = '';
-            let i = 0;
-            const f = fmt; // keep original case for output style
-
-            while (i < f.length) {
-                const ch = f[i].toLowerCase();
-
-                if (f[i] === '"') {
-                    // Quoted literal — skip until closing quote
-                    i++;
-                    while (i < f.length && f[i] !== '"') { result += f[i]; i++; }
-                    i++; // skip closing "
-                    continue;
-                }
-
-                if (f[i] === '\\') { result += f[i + 1] || ''; i += 2; continue; }
-
-                if (ch === 'y') {
-                    let run = 0;
-                    while (i < f.length && f[i].toLowerCase() === 'y') { run++; i++; }
-                    result += run >= 4 ? yyyy : yy;
-                    continue;
-                }
-
-                if (ch === 'm') {
-                    let run = 0;
-                    while (i < f.length && f[i].toLowerCase() === 'm') { run++; i++; }
-                    if (run >= 4) result += MONTH_LONG[m - 1];
-                    else if (run === 3) result += MONTH_SHORT[m - 1];
-                    else if (run === 2) result += String(m).padStart(2, '0');
-                    else result += String(m);
-                    continue;
-                }
-
-                if (ch === 'd') {
-                    // Check it's not 'ddd'/'dddd' (day-of-week) — treat those as-is
-                    let run = 0;
-                    while (i < f.length && f[i].toLowerCase() === 'd') { run++; i++; }
-                    if (run >= 3) {
-                        // day-of-week — skip (rarely needed on certificates)
-                        continue;
-                    }
-                    result += run === 2 ? String(d).padStart(2, '0') : String(d);
-                    continue;
-                }
-
-                // Everything else (separators, time parts we don't need, etc.)
-                result += f[i];
-                i++;
-            }
-
-            return result;
-        }
-
-        // Given a raw cell object from XLSX.js (with cellNF option) and its value,
-        // return a human-readable string.
-        function cellValueToString(cell, rawValue) {
-            if (cell && cell.t === 'd') {
-                // XLSX.js already parsed it into a JS Date (cellDates:true)
-                const fmt = (cell.z) || 'dd/MM/yyyy';
-                return formatDateByFmt(rawValue, fmt);
-            }
-
-            if (cell && cell.t === 'n' && cell.z && looksLikeDateFmt(cell.z)) {
-                // Numeric cell whose format looks like a date → convert serial
-                const date = excelSerialToDate(rawValue);
-                return formatDateByFmt(date, cell.z);
-            }
-
-            if (rawValue === null || rawValue === undefined) return '';
-            return String(rawValue);
-        }
-        // ─────────────────────────────────────────────────────────────────────────
-
-        function handleTemplateUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            document.getElementById('templateName').textContent = file.name;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    templateImage = img;
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    drawCanvas();
-                    checkReady();
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function handleDataUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            document.getElementById('dataName').textContent = file.name;
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const data = new Uint8Array(event.target.result);
-
-                // cellDates:true  → XLSX.js converts date serials to JS Date objects
-                // cellNF:true     → preserves the number-format string in cell.z
-                // raw:false       → returns formatted strings for non-date cells
-                const workbook = XLSX.read(data, {
-                    type: 'array',
-                    cellDates: true,   // ← key fix: parse date serials automatically
-                    cellNF: true       // ← keep number-format string for formatting
-                });
-
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-
-                // Use sheet_to_json with raw:false to get display strings for most
-                // cells, but we need the raw cell objects for date formatting.
-                // So we pull raw cell objects via the sheet directly.
-                const range = XLSX.utils.decode_range(firstSheet['!ref']);
-                const numRows = range.e.r - range.s.r + 1;
-                const numCols = range.e.c - range.s.c + 1;
-
-                // Build a 2D array: row 0 = headers, rest = data
-                const grid = [];
-                for (let r = range.s.r; r <= range.e.r; r++) {
-                    const row = [];
-                    for (let c = range.s.c; c <= range.e.c; c++) {
-                        const addr = XLSX.utils.encode_cell({ r, c });
-                        const cell = firstSheet[addr];
-                        if (!cell) { row.push(''); continue; }
-
-                        const value = cell.v; // raw value (JS Date if cellDates:true and date cell)
-                        row.push(cellValueToString(cell, value));
-                    }
-                    grid.push(row);
-                }
-
-                if (grid.length < 2) {
-                    showStatus('Please provide a file with headers and at least one row of data', 'error');
-                    return;
-                }
-
-                columns = grid[0];
-                dataRows = grid.slice(1).filter(row => row.some(cell => cell !== '' && cell !== null && cell !== undefined));
-                
-                document.getElementById('columnInfo').textContent = 
-                    `✓ Found ${columns.length} columns and ${dataRows.length} records`;
-                
-                createFieldList();
-                checkReady();
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function createFieldList() {
-            const fieldList = document.getElementById('fieldList');
-            fieldList.innerHTML = '';
-            fieldConfig = [];
-
-            columns.forEach((col, idx) => {
-                const config = {
-                    column: idx,
-                    name: col || `Column ${idx + 1}`,
-                    enabled: idx === 0,
-                    x: canvas.width / 2,
-                    y: 200 + (idx * 60),
-                    fontSize: 48,
-                    color: '#000000',
-                    font: fonts[0].value,
-                    fontWeight: fonts[0].weight,
-                    fontStyle: fonts[0].style,
-                    align: 'center'
-                };
-                fieldConfig.push(config);
-
-                const fieldDiv = document.createElement('div');
-                fieldDiv.className = `field-item ${config.enabled ? '' : 'disabled'}`;
-                fieldDiv.onclick = () => selectField(idx);
-                
-                fieldDiv.innerHTML = `
-                    <div class="field-header">
-                        <label>
-                            <input type="checkbox" ${config.enabled ? 'checked' : ''} 
-                                   onclick="event.stopPropagation(); toggleField(${idx}, this.checked)">
-                            ${config.name}
-                        </label>
+                <!-- Step 1: Certificate -->
+                <div class="sig-sidebar-section">
+                    <div class="sig-section-label">
+                        <span class="num">1</span> Certificate Template
                     </div>
-                    <div class="position-display">Position: <span id="pos-${idx}">Click to place</span></div>
-                    <div class="field-controls">
-                        <div class="control-group">
-                            <label>Font Family</label>
-                            <select id="fontSelect-${idx}" onchange="updateFont(${idx}, this.value)">
-                                ${fonts.map((f, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${f.name}</option>`).join('')}
-                            </select>
-                            <div class="font-preview" id="fontPreview-${idx}" style="font-family: '${config.font}';">Sample Text</div>
-                        </div>
-                        <div class="control-group">
-                            <label>Font Size</label>
-                            <input type="number" value="${config.fontSize}" min="10" max="200"
-                                   onchange="updateConfig(${idx}, 'fontSize', parseInt(this.value))">
-                        </div>
-                        <div class="control-group">
-                            <label>Text Alignment</label>
-                            <select onchange="updateConfig(${idx}, 'align', this.value)">
-                                <option value="left">Left</option>
-                                <option value="center" selected>Center</option>
-                                <option value="right">Right</option>
-                            </select>
-                        </div>
-                        <div class="control-group">
-                            <label>Text Color</label>
-                            <div class="color-picker-wrapper">
-                                <input type="color" value="${config.color}" 
-                                       onchange="updateConfig(${idx}, 'color', this.value); this.nextElementSibling.value = this.value">
-                                <input type="text" value="${config.color}" 
-                                       onchange="updateConfig(${idx}, 'color', this.value); this.previousElementSibling.value = this.value">
-                            </div>
-                        </div>
+                    <label class="sig-upload-zone" id="certZone">
+                        <input type="file" id="certInput" accept="image/png,image/jpeg,image/webp" />
+                        <div class="sig-uz-icon">🏅</div>
+                        <div class="sig-uz-label">Upload Certificate</div>
+                        <div class="sig-uz-hint">PNG, JPG, WEBP supported</div>
+                    </label>
+                </div>
+
+                <!-- Step 2: Signatures -->
+                <div class="sig-sidebar-section">
+                    <div class="sig-section-label">
+                        <span class="num">2</span> Signatures
                     </div>
-                `;
-                
-                fieldList.appendChild(fieldDiv);
-                updatePositionDisplay(idx);
-            });
+                    <div class="sig-list" id="sigList"></div>
+                    <label class="add-sig-zone" id="addSigZone">
+                        <input type="file" id="sigInput" accept="image/png,image/jpeg,image/webp" multiple />
+                        ＋ Add Signature(s)
+                    </label>
+                </div>
 
-            if (fieldConfig.length > 0) {
-                selectField(0);
+                <!-- Step 3: Export -->
+                <div class="sig-action-area">
+                    <div class="sig-section-label" style="margin-bottom: 14px;">
+                        <span class="num">3</span> Export
+                    </div>
+                    <button class="sig-btn-primary" id="downloadBtn" disabled>⬇ Download Certificate (PNG)</button>
+                    <button class="sig-btn-secondary" id="resetBtn">↺ Start Over</button>
+                    <div id="sigStatus"></div>
+                </div>
+            </div>
+
+            <!-- CANVAS AREA -->
+            <div class="sig-canvas-area" id="sigCanvasArea">
+                <div class="sig-empty-state" id="sigEmptyState">
+                    <div class="big-icon">📜</div>
+                    <p>Upload a certificate template to get started, then add your signatures.</p>
+                </div>
+
+                <div id="canvasBlock" style="display:none; text-align:center;">
+                    <div class="mode-badge" id="modeBadge">
+                        <div class="dot"></div>
+                        <span id="modeText">Placement mode — click canvas to place selected signature</span>
+                    </div>
+                    <div class="sig-canvas-wrapper" id="canvasWrapper">
+                        <canvas id="mainCanvas"></canvas>
+                    </div>
+                    <p class="sig-canvas-hint">Drag signature handles to reposition · Drag corner to resize</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        Built by <a href="https://github.com/akritisshetty/" target="_blank" style="color: #6b7c63; text-decoration: none; font-weight: 600; transition: color 0.3s;">Akriti S Shetty</a> ☕
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════════ -->
+<script>
+/* ── TAB SWITCHING ── */
+function switchTool(tool) {
+    document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tool).classList.add('active');
+    document.getElementById('panel-' + tool).classList.add('active');
+}
+
+
+/* ════════════════════════════════════════════
+   BULK CERTIFICATE GENERATOR LOGIC
+════════════════════════════════════════════ */
+let templateImage = null;
+let dataRows = [];
+let columns = [];
+let fieldConfig = [];
+let activeFieldIndex = -1;
+
+const templateInput = document.getElementById('templateInput');
+const dataInput     = document.getElementById('dataInput');
+const generateBtn   = document.getElementById('generateBtn');
+const previewBtn    = document.getElementById('previewBtn');
+const canvas        = document.getElementById('previewCanvas');
+const ctx           = canvas.getContext('2d');
+
+const fonts = [
+    { name: 'Arial',             value: '"Arial", "Helvetica", sans-serif',                                                              weight: 'normal', style: 'normal' },
+    { name: 'Calibri',           value: '"Calibri", "Candara", "Segoe", "Segoe UI", "Optima", sans-serif',                              weight: 'normal', style: 'normal' },
+    { name: 'Times New Roman',   value: '"Times New Roman", Times, Baskerville, Georgia, serif',                                         weight: 'normal', style: 'normal' },
+    { name: 'Georgia',           value: '"Georgia", Times, "Times New Roman", serif',                                                    weight: 'normal', style: 'normal' },
+    { name: 'Verdana',           value: '"Verdana", "Geneva", "Tahoma", sans-serif',                                                     weight: 'normal', style: 'normal' },
+    { name: 'Trebuchet MS',      value: '"Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Tahoma, sans-serif',     weight: 'normal', style: 'normal' },
+    { name: 'Palatino',          value: '"Palatino Linotype", "Palatino", "Book Antiqua", serif',                                        weight: 'normal', style: 'normal' },
+    { name: 'Garamond',          value: '"Garamond", "Baskerville", "Baskerville Old Face", "Hoefler Text", "Times New Roman", serif',   weight: 'normal', style: 'normal' },
+    { name: 'Courier New',       value: '"Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace',              weight: 'normal', style: 'normal' },
+    { name: 'Impact',            value: '"Impact", "Charcoal", "Helvetica Inserat", "Bitstream Vera Sans Bold", sans-serif',             weight: 'normal', style: 'normal' },
+    { name: 'Bookman',           value: '"Bookman Old Style", "Goudy Old Style", Garamond, "Big Caslon", "Times New Roman", serif',      weight: 'normal', style: 'normal' },
+    { name: 'Brush Script',      value: '"Brush Script MT", cursive',                                                                    weight: 'normal', style: 'normal' }
+];
+
+templateInput.addEventListener('change', handleTemplateUpload);
+dataInput.addEventListener('change', handleDataUpload);
+canvas.addEventListener('click', handleCanvasClick);
+generateBtn.addEventListener('click', generateCertificates);
+previewBtn.addEventListener('click', previewAndDownload);
+
+/* ─── DATE HANDLING ─── */
+const DATE_FMT_PATTERNS = [
+    /\byyyy\b/, /\byy\b/, /\bdd\b/, /\bd\b(?!e)/,
+    /\bmm\b/, /\bm\b(?!s)/,
+    /\bmonth\b/
+];
+
+function looksLikeDateFmt(fmt) {
+    if (!fmt) return false;
+    const f = fmt.toLowerCase();
+    if (/^[h\[\]hms:\.ap" ]+$/i.test(f)) return false;
+    return DATE_FMT_PATTERNS.some(p => p.test(f));
+}
+
+function excelSerialToDate(serial) {
+    const MS_PER_DAY = 86400000;
+    const EXCEL_EPOCH_MS = -2209161600000;
+    const adjusted = serial > 60 ? serial - 1 : serial;
+    return new Date(EXCEL_EPOCH_MS + (adjusted - 1) * MS_PER_DAY);
+}
+
+function formatDateByFmt(date, fmt) {
+    if (!date || isNaN(date.getTime())) return '';
+    const d    = date.getDate();
+    const m    = date.getMonth() + 1;
+    const yy   = String(date.getFullYear()).slice(-2);
+    const yyyy = date.getFullYear();
+    const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const MONTH_LONG  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    let result = '';
+    let i = 0;
+    const f = fmt;
+    while (i < f.length) {
+        const ch = f[i].toLowerCase();
+        if (f[i] === '"') { i++; while (i < f.length && f[i] !== '"') { result += f[i]; i++; } i++; continue; }
+        if (f[i] === '\\') { result += f[i + 1] || ''; i += 2; continue; }
+        if (ch === 'y') {
+            let run = 0;
+            while (i < f.length && f[i].toLowerCase() === 'y') { run++; i++; }
+            result += run >= 4 ? yyyy : yy; continue;
+        }
+        if (ch === 'm') {
+            let run = 0;
+            while (i < f.length && f[i].toLowerCase() === 'm') { run++; i++; }
+            if (run >= 4) result += MONTH_LONG[m - 1];
+            else if (run === 3) result += MONTH_SHORT[m - 1];
+            else if (run === 2) result += String(m).padStart(2, '0');
+            else result += String(m);
+            continue;
+        }
+        if (ch === 'd') {
+            let run = 0;
+            while (i < f.length && f[i].toLowerCase() === 'd') { run++; i++; }
+            if (run >= 3) { continue; }
+            result += run === 2 ? String(d).padStart(2, '0') : String(d);
+            continue;
+        }
+        result += f[i]; i++;
+    }
+    return result;
+}
+
+function cellValueToString(cell, rawValue) {
+    if (cell && cell.t === 'd') {
+        const fmt = (cell.z) || 'dd/MM/yyyy';
+        return formatDateByFmt(rawValue, fmt);
+    }
+    if (cell && cell.t === 'n' && cell.z && looksLikeDateFmt(cell.z)) {
+        const date = excelSerialToDate(rawValue);
+        return formatDateByFmt(date, cell.z);
+    }
+    if (rawValue === null || rawValue === undefined) return '';
+    return String(rawValue);
+}
+
+function handleTemplateUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('templateName').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+            templateImage = img;
+            canvas.width  = img.width;
+            canvas.height = img.height;
+            drawCanvas();
+            checkReady();
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function handleDataUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('dataName').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true, cellNF: true });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const range = XLSX.utils.decode_range(firstSheet['!ref']);
+        const grid = [];
+        for (let r = range.s.r; r <= range.e.r; r++) {
+            const row = [];
+            for (let c = range.s.c; c <= range.e.c; c++) {
+                const addr = XLSX.utils.encode_cell({ r, c });
+                const cell = firstSheet[addr];
+                if (!cell) { row.push(''); continue; }
+                row.push(cellValueToString(cell, cell.v));
+            }
+            grid.push(row);
+        }
+        if (grid.length < 2) { showStatus('Please provide a file with headers and at least one row of data', 'error'); return; }
+        columns  = grid[0];
+        dataRows = grid.slice(1).filter(row => row.some(cell => cell !== '' && cell !== null && cell !== undefined));
+        document.getElementById('columnInfo').textContent = `✓ Found ${columns.length} columns and ${dataRows.length} records`;
+        createFieldList();
+        checkReady();
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function createFieldList() {
+    const fieldList = document.getElementById('fieldList');
+    fieldList.innerHTML = '';
+    fieldConfig = [];
+    columns.forEach((col, idx) => {
+        const config = {
+            column: idx,
+            name: col || `Column ${idx + 1}`,
+            enabled: idx === 0,
+            x: canvas.width / 2,
+            y: 200 + (idx * 60),
+            fontSize: 48,
+            color: '#000000',
+            font: fonts[0].value,
+            fontWeight: fonts[0].weight,
+            fontStyle: fonts[0].style,
+            align: 'center'
+        };
+        fieldConfig.push(config);
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = `field-item ${config.enabled ? '' : 'disabled'}`;
+        fieldDiv.onclick = () => selectField(idx);
+        fieldDiv.innerHTML = `
+            <div class="field-header">
+                <label>
+                    <input type="checkbox" ${config.enabled ? 'checked' : ''}
+                           onclick="event.stopPropagation(); toggleField(${idx}, this.checked)">
+                    ${config.name}
+                </label>
+            </div>
+            <div class="position-display">Position: <span id="pos-${idx}">Click to place</span></div>
+            <div class="field-controls">
+                <div class="control-group">
+                    <label>Font Family</label>
+                    <select id="fontSelect-${idx}" onchange="updateFont(${idx}, this.value)">
+                        ${fonts.map((f, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${f.name}</option>`).join('')}
+                    </select>
+                    <div class="font-preview" id="fontPreview-${idx}" style="font-family: '${config.font}';">Sample Text</div>
+                </div>
+                <div class="control-group">
+                    <label>Font Size</label>
+                    <input type="number" value="${config.fontSize}" min="10" max="200"
+                           onchange="updateConfig(${idx}, 'fontSize', parseInt(this.value))">
+                </div>
+                <div class="control-group">
+                    <label>Text Alignment</label>
+                    <select onchange="updateConfig(${idx}, 'align', this.value)">
+                        <option value="left">Left</option>
+                        <option value="center" selected>Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Text Color</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" value="${config.color}"
+                               onchange="updateConfig(${idx}, 'color', this.value); this.nextElementSibling.value = this.value">
+                        <input type="text" value="${config.color}"
+                               onchange="updateConfig(${idx}, 'color', this.value); this.previousElementSibling.value = this.value">
+                    </div>
+                </div>
+            </div>
+        `;
+        fieldList.appendChild(fieldDiv);
+        updatePositionDisplay(idx);
+    });
+    if (fieldConfig.length > 0) selectField(0);
+}
+
+function selectField(idx) {
+    activeFieldIndex = idx;
+    document.querySelectorAll('.field-item').forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+    });
+    drawCanvas();
+}
+
+function toggleField(idx, enabled) {
+    fieldConfig[idx].enabled = enabled;
+    document.querySelectorAll('.field-item')[idx].classList.toggle('disabled', !enabled);
+    drawCanvas();
+}
+
+function updateConfig(idx, prop, value) {
+    fieldConfig[idx][prop] = value;
+    drawCanvas();
+}
+
+function updateFont(idx, fontIdx) {
+    const selectedFont = fonts[fontIdx];
+    fieldConfig[idx].font       = selectedFont.value;
+    fieldConfig[idx].fontWeight = selectedFont.weight;
+    fieldConfig[idx].fontStyle  = selectedFont.style;
+    const preview = document.getElementById(`fontPreview-${idx}`);
+    if (preview) {
+        preview.style.fontFamily  = selectedFont.value;
+        preview.style.fontWeight  = selectedFont.weight;
+        preview.style.fontStyle   = selectedFont.style;
+    }
+    drawCanvas();
+}
+
+function handleCanvasClick(e) {
+    if (activeFieldIndex === -1) return;
+    const rect   = canvas.getBoundingClientRect();
+    const scaleX = canvas.width  / rect.width;
+    const scaleY = canvas.height / rect.height;
+    fieldConfig[activeFieldIndex].x = Math.round((e.clientX - rect.left) * scaleX);
+    fieldConfig[activeFieldIndex].y = Math.round((e.clientY - rect.top)  * scaleY);
+    updatePositionDisplay(activeFieldIndex);
+    drawCanvas();
+}
+
+function updatePositionDisplay(idx) {
+    const display = document.getElementById(`pos-${idx}`);
+    if (display) display.textContent = `X: ${fieldConfig[idx].x}, Y: ${fieldConfig[idx].y}`;
+}
+
+function drawCanvas() {
+    if (!templateImage) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(templateImage, 0, 0);
+    if (dataRows.length === 0) return;
+    const sampleRow = dataRows[0];
+    fieldConfig.forEach((config, idx) => {
+        if (config.enabled && sampleRow[idx]) {
+            ctx.font      = `${config.fontStyle} ${config.fontWeight} ${config.fontSize}px ${config.font}`;
+            ctx.fillStyle = config.color;
+            ctx.textAlign = config.align;
+            ctx.fillText(String(sampleRow[idx]), config.x, config.y);
+            if (idx === activeFieldIndex) {
+                ctx.strokeStyle = '#8b9d83';
+                ctx.lineWidth   = 3;
+                ctx.setLineDash([5, 5]);
+                const metrics    = ctx.measureText(String(sampleRow[idx]));
+                const textHeight = config.fontSize;
+                let textX        = config.x;
+                if (config.align === 'center') textX -= metrics.width / 2;
+                else if (config.align === 'right') textX -= metrics.width;
+                ctx.strokeRect(textX - 5, config.y - textHeight + 5, metrics.width + 10, textHeight + 10);
+                ctx.setLineDash([]);
             }
         }
+    });
+}
 
-        function selectField(idx) {
-            activeFieldIndex = idx;
-            document.querySelectorAll('.field-item').forEach((el, i) => {
-                el.classList.toggle('active', i === idx);
-            });
-            drawCanvas();
-        }
+function checkReady() {
+    if (templateImage && dataRows.length > 0) {
+        document.getElementById('configSection').style.display = 'block';
+        drawCanvas();
+    }
+}
 
-        function toggleField(idx, enabled) {
-            fieldConfig[idx].enabled = enabled;
-            document.querySelectorAll('.field-item')[idx].classList.toggle('disabled', !enabled);
-            drawCanvas();
-        }
-
-        function updateConfig(idx, prop, value) {
-            fieldConfig[idx][prop] = value;
-            drawCanvas();
-        }
-
-        function updateFont(idx, fontIdx) {
-            const selectedFont = fonts[fontIdx];
-            fieldConfig[idx].font = selectedFont.value;
-            fieldConfig[idx].fontWeight = selectedFont.weight;
-            fieldConfig[idx].fontStyle = selectedFont.style;
-            
-            const preview = document.getElementById(`fontPreview-${idx}`);
-            if (preview) {
-                preview.style.fontFamily = selectedFont.value;
-                preview.style.fontWeight = selectedFont.weight;
-                preview.style.fontStyle = selectedFont.style;
+async function generateCertificates() {
+    if (!templateImage || dataRows.length === 0) return;
+    generateBtn.disabled = true;
+    previewBtn.disabled  = true;
+    const progressBar  = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    progressBar.style.display = 'block';
+    showStatus(`Generating ${dataRows.length} certificates...`, 'info');
+    const zip        = new JSZip();
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx    = tempCanvas.getContext('2d');
+    tempCanvas.width  = canvas.width;
+    tempCanvas.height = canvas.height;
+    for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        tempCtx.drawImage(templateImage, 0, 0);
+        fieldConfig.forEach((config, idx) => {
+            if (config.enabled && row[idx]) {
+                tempCtx.font      = `${config.fontStyle} ${config.fontWeight} ${config.fontSize}px ${config.font}`;
+                tempCtx.fillStyle = config.color;
+                tempCtx.textAlign = config.align;
+                tempCtx.fillText(String(row[idx]), config.x, config.y);
             }
-            
-            drawCanvas();
+        });
+        const blob     = await new Promise(resolve => tempCanvas.toBlob(resolve, 'image/png'));
+        const fileName = `certificate_${sanitizeFilename(row[0] || (i + 1))}.png`;
+        zip.file(fileName, blob);
+        const progress = Math.round(((i + 1) / dataRows.length) * 100);
+        progressFill.style.width   = progress + '%';
+        progressFill.textContent   = progress + '%';
+    }
+    showStatus('Creating ZIP file...', 'info');
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const link    = document.createElement('a');
+    link.href     = URL.createObjectURL(zipBlob);
+    link.download = `certificates_${Date.now()}.zip`;
+    link.click();
+    showStatus(`Successfully generated and downloaded ${dataRows.length} certificates!`, 'success');
+    generateBtn.disabled = false;
+    previewBtn.disabled  = false;
+    setTimeout(() => {
+        progressBar.style.display = 'none';
+        progressFill.style.width  = '0%';
+    }, 2000);
+}
+
+async function previewAndDownload() {
+    if (!templateImage || dataRows.length === 0) return;
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx    = tempCanvas.getContext('2d');
+    tempCanvas.width  = canvas.width;
+    tempCanvas.height = canvas.height;
+    const row = dataRows[0];
+    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+    tempCtx.drawImage(templateImage, 0, 0);
+    fieldConfig.forEach((config, idx) => {
+        if (config.enabled && row[idx]) {
+            tempCtx.font      = `${config.fontStyle} ${config.fontWeight} ${config.fontSize}px ${config.font}`;
+            tempCtx.fillStyle = config.color;
+            tempCtx.textAlign = config.align;
+            tempCtx.fillText(String(row[idx]), config.x, config.y);
         }
+    });
+    tempCanvas.toBlob(blob => {
+        const link    = document.createElement('a');
+        link.href     = URL.createObjectURL(blob);
+        link.download = `certificate_preview_${sanitizeFilename(row[0])}.png`;
+        link.click();
+        showStatus('Preview certificate downloaded!', 'success');
+    }, 'image/png');
+}
 
-        function handleCanvasClick(e) {
-            if (activeFieldIndex === -1) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
-            
-            fieldConfig[activeFieldIndex].x = Math.round(x);
-            fieldConfig[activeFieldIndex].y = Math.round(y);
-            
-            updatePositionDisplay(activeFieldIndex);
-            drawCanvas();
+function sanitizeFilename(name) {
+    return String(name).replace(/[^a-z0-9_\-]/gi, '_');
+}
+
+function showStatus(message, type) {
+    const statusDiv = document.getElementById('status');
+    statusDiv.textContent  = message;
+    statusDiv.className    = `status ${type}`;
+    statusDiv.style.display = 'block';
+}
+
+
+/* ════════════════════════════════════════════
+   SIGNATURE STUDIO LOGIC
+════════════════════════════════════════════ */
+let certImage   = null;
+let signatures  = [];
+let activeSigId = null;
+let placingMode = false;
+
+const mainCanvas    = document.getElementById('mainCanvas');
+const sigCtx        = mainCanvas.getContext('2d');
+const certInput     = document.getElementById('certInput');
+const certZone      = document.getElementById('certZone');
+const sigInputEl    = document.getElementById('sigInput');
+const sigListEl     = document.getElementById('sigList');
+const downloadBtn   = document.getElementById('downloadBtn');
+const resetBtn      = document.getElementById('resetBtn');
+const canvasWrapper = document.getElementById('canvasWrapper');
+const canvasBlock   = document.getElementById('canvasBlock');
+const sigEmptyState = document.getElementById('sigEmptyState');
+const modeBadge     = document.getElementById('modeBadge');
+const modeText      = document.getElementById('modeText');
+const sigStatusEl   = document.getElementById('sigStatus');
+
+/* Certificate upload */
+certInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+            certImage = img;
+            certZone.classList.add('has-file');
+            certZone.querySelector('.sig-uz-label').textContent = file.name;
+            initSigCanvas();
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+});
+
+/* Drag-and-drop for cert */
+certZone.addEventListener('dragover', e => { e.preventDefault(); certZone.classList.add('dragover'); });
+certZone.addEventListener('dragleave', () => certZone.classList.remove('dragover'));
+certZone.addEventListener('drop', e => {
+    e.preventDefault();
+    certZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        certInput.files = e.dataTransfer.files;
+        certInput.dispatchEvent(new Event('change'));
+    }
+});
+
+/* Signature upload */
+sigInputEl.addEventListener('change', e => {
+    Array.from(e.target.files).forEach(file => addSignature(file));
+    sigInputEl.value = '';
+});
+
+function addSignature(file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+            const id    = 'sig_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+            const scale = certImage ? (certImage.width * 0.2) / img.width : 150 / img.width;
+            const w     = Math.round(img.width  * scale);
+            const h     = Math.round(img.height * scale);
+            const x     = certImage ? Math.round(certImage.width  / 2 - w / 2) : 50;
+            const y     = certImage ? Math.round(certImage.height * 0.75)       : 200;
+            const sig   = { id, name: file.name.replace(/\.[^.]+$/, ''), img, x, y, w, h, el: null };
+            signatures.push(sig);
+            if (certImage) { createSigHandle(sig); renderSigCanvas(); }
+            renderSigList();
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function initSigCanvas() {
+    mainCanvas.width  = certImage.width;
+    mainCanvas.height = certImage.height;
+    sigEmptyState.style.display = 'none';
+    canvasBlock.style.display   = 'block';
+    signatures.forEach(sig => {
+        if (sig.el) sig.el.remove();
+        sig.el = null;
+        createSigHandle(sig);
+    });
+    renderSigCanvas();
+    updateDownloadBtn();
+}
+
+function renderSigCanvas() {
+    if (!certImage) return;
+    sigCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+    sigCtx.drawImage(certImage, 0, 0);
+    signatures.forEach(sig => sigCtx.drawImage(sig.img, sig.x, sig.y, sig.w, sig.h));
+    syncHandles();
+}
+
+function createSigHandle(sig) {
+    const el = document.createElement('div');
+    el.className   = 'sig-handle';
+    el.dataset.id  = sig.id;
+    const tag      = document.createElement('div');
+    tag.className  = 'label-tag';
+    tag.textContent = sig.name;
+    el.appendChild(tag);
+    const resizer  = document.createElement('div');
+    resizer.className = 'resize-handle';
+    el.appendChild(resizer);
+    canvasWrapper.appendChild(el);
+    sig.el = el;
+    makeDraggable(el, sig);
+    makeResizable(resizer, sig);
+    el.addEventListener('mousedown', ev => {
+        if (ev.target === resizer) return;
+        setActiveSig(sig.id);
+    });
+    syncHandle(sig);
+}
+
+function syncHandle(sig) {
+    if (!sig.el || !certImage) return;
+    const rect   = mainCanvas.getBoundingClientRect();
+    const scaleX = rect.width  / certImage.width;
+    const scaleY = rect.height / certImage.height;
+    sig.el.style.left   = (sig.x * scaleX) + 'px';
+    sig.el.style.top    = (sig.y * scaleY) + 'px';
+    sig.el.style.width  = (sig.w * scaleX) + 'px';
+    sig.el.style.height = (sig.h * scaleY) + 'px';
+}
+
+function syncHandles() { signatures.forEach(sig => syncHandle(sig)); }
+
+window.addEventListener('resize', () => syncHandles());
+new ResizeObserver(() => syncHandles()).observe(canvasWrapper);
+
+function makeDraggable(el, sig) {
+    let startMX, startMY, startX, startY;
+    el.addEventListener('mousedown', ev => {
+        if (ev.target.classList.contains('resize-handle')) return;
+        ev.preventDefault();
+        setActiveSig(sig.id);
+        const rect   = mainCanvas.getBoundingClientRect();
+        const scaleX = certImage.width  / rect.width;
+        const scaleY = certImage.height / rect.height;
+        startMX = ev.clientX; startMY = ev.clientY;
+        startX  = sig.x;      startY  = sig.y;
+        function onMove(e) {
+            const dx = (e.clientX - startMX) * scaleX;
+            const dy = (e.clientY - startMY) * scaleY;
+            sig.x = Math.round(Math.max(0, Math.min(certImage.width  - sig.w, startX + dx)));
+            sig.y = Math.round(Math.max(0, Math.min(certImage.height - sig.h, startY + dy)));
+            renderSigCanvas(); updateSigCard(sig);
         }
-
-        function updatePositionDisplay(idx) {
-            const display = document.getElementById(`pos-${idx}`);
-            if (display) {
-                display.textContent = `X: ${fieldConfig[idx].x}, Y: ${fieldConfig[idx].y}`;
-            }
+        function onUp() {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup',   onUp);
         }
-
-        function drawCanvas() {
-            if (!templateImage) return;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(templateImage, 0, 0);
-            
-            if (dataRows.length === 0) return;
-            
-            const sampleRow = dataRows[0];
-            fieldConfig.forEach((config, idx) => {
-                if (config.enabled && sampleRow[idx]) {
-                    const fontString = `${config.fontStyle} ${config.fontWeight} ${config.fontSize}px ${config.font}`;
-                    ctx.font = fontString;
-                    ctx.fillStyle = config.color;
-                    ctx.textAlign = config.align;
-                    ctx.fillText(String(sampleRow[idx]), config.x, config.y);
-                    
-                    if (idx === activeFieldIndex) {
-                        ctx.strokeStyle = '#8b9d83';
-                        ctx.lineWidth = 3;
-                        ctx.setLineDash([5, 5]);
-                        const metrics = ctx.measureText(String(sampleRow[idx]));
-                        const textHeight = config.fontSize;
-                        let textX = config.x;
-                        
-                        if (config.align === 'center') textX -= metrics.width / 2;
-                        else if (config.align === 'right') textX -= metrics.width;
-                        
-                        ctx.strokeRect(textX - 5, config.y - textHeight + 5, metrics.width + 10, textHeight + 10);
-                        ctx.setLineDash([]);
-                    }
-                }
-            });
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup',   onUp);
+    });
+    el.addEventListener('touchstart', ev => {
+        if (ev.target.classList.contains('resize-handle')) return;
+        const t      = ev.touches[0];
+        const rect   = mainCanvas.getBoundingClientRect();
+        const scaleX = certImage.width  / rect.width;
+        const scaleY = certImage.height / rect.height;
+        startMX = t.clientX; startMY = t.clientY;
+        startX  = sig.x;     startY  = sig.y;
+        setActiveSig(sig.id);
+        function onMove(e) {
+            const tt = e.touches[0];
+            sig.x = Math.round(Math.max(0, Math.min(certImage.width  - sig.w, startX + (tt.clientX - startMX) * scaleX)));
+            sig.y = Math.round(Math.max(0, Math.min(certImage.height - sig.h, startY + (tt.clientY - startMY) * scaleY)));
+            renderSigCanvas(); updateSigCard(sig);
         }
+        function onEnd() { el.removeEventListener('touchmove', onMove); el.removeEventListener('touchend', onEnd); }
+        el.addEventListener('touchmove', onMove, { passive: true });
+        el.addEventListener('touchend', onEnd);
+    }, { passive: true });
+}
 
-        function checkReady() {
-            if (templateImage && dataRows.length > 0) {
-                document.getElementById('configSection').style.display = 'block';
-                drawCanvas();
-            }
+function makeResizable(resizer, sig) {
+    resizer.addEventListener('mousedown', ev => {
+        ev.preventDefault(); ev.stopPropagation();
+        const rect   = mainCanvas.getBoundingClientRect();
+        const scaleX = certImage.width  / rect.width;
+        const scaleY = certImage.height / rect.height;
+        const startMX = ev.clientX, startMY = ev.clientY;
+        const startW  = sig.w, startH = sig.h;
+        const aspect  = sig.img.width / sig.img.height;
+        function onMove(e) {
+            let newW = Math.round(Math.max(30, startW + (e.clientX - startMX) * scaleX));
+            let newH = Math.round(newW / aspect);
+            if (sig.x + newW > certImage.width)  newW = certImage.width  - sig.x;
+            if (sig.y + newH > certImage.height) newH = certImage.height - sig.y;
+            sig.w = newW; sig.h = Math.round(sig.w / aspect);
+            renderSigCanvas(); updateSigCard(sig);
         }
+        function onUp() { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup',   onUp);
+    });
+}
 
-        async function generateCertificates() {
-            if (!templateImage || dataRows.length === 0) return;
+/* Placement mode (click canvas) */
+mainCanvas.addEventListener('click', ev => {
+    if (!placingMode || activeSigId === null) return;
+    const sig = signatures.find(s => s.id === activeSigId);
+    if (!sig) return;
+    const rect   = mainCanvas.getBoundingClientRect();
+    const scaleX = certImage.width  / rect.width;
+    const scaleY = certImage.height / rect.height;
+    sig.x = Math.round(Math.max(0, Math.min(certImage.width  - sig.w, (ev.clientX - rect.left) * scaleX - sig.w / 2)));
+    sig.y = Math.round(Math.max(0, Math.min(certImage.height - sig.h, (ev.clientY - rect.top)  * scaleY - sig.h / 2)));
+    renderSigCanvas(); updateSigCard(sig);
+    setPlacingMode(false);
+});
 
-            generateBtn.disabled = true;
-            previewBtn.disabled = true;
-            const progressBar = document.getElementById('progressBar');
-            const progressFill = document.getElementById('progressFill');
-            progressBar.style.display = 'block';
+function setPlacingMode(on) {
+    placingMode = on;
+    mainCanvas.style.cursor = on ? 'crosshair' : 'default';
+    modeBadge.classList.toggle('active', on);
+}
 
-            showStatus(`Generating ${dataRows.length} certificates...`, 'info');
+function setActiveSig(id) {
+    activeSigId = id;
+    signatures.forEach(s => { if (s.el) s.el.classList.toggle('active', s.id === id); });
+    document.querySelectorAll('.sig-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.id === id);
+    });
+}
 
-            const zip = new JSZip();
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
+function renderSigList() {
+    sigListEl.innerHTML = '';
+    if (signatures.length === 0) {
+        sigListEl.innerHTML = '<p style="font-size:0.8rem;color:#aaa;text-align:center;padding:8px 0;">No signatures added yet</p>';
+        return;
+    }
+    signatures.forEach(sig => {
+        const card        = document.createElement('div');
+        card.className    = 'sig-card' + (sig.id === activeSigId ? ' active' : '');
+        card.dataset.id   = sig.id;
+        card.innerHTML = `
+            <div class="sig-card-top">
+                <img class="sig-thumb" src="${sig.img.src}" alt="${sig.name}" />
+                <div class="sig-meta">
+                    <div class="sig-name">${sig.name}</div>
+                    <div class="sig-pos" id="pos_${sig.id}">X:${sig.x} Y:${sig.y} · ${sig.w}×${sig.h}px</div>
+                </div>
+            </div>
+            <div class="sig-controls">
+                <div>
+                    <label>Width (px)</label>
+                    <input type="number" value="${sig.w}" min="20" max="${certImage ? certImage.width : 9999}" id="w_${sig.id}" />
+                </div>
+                <div>
+                    <label>Height (px)</label>
+                    <input type="number" value="${sig.h}" min="10" max="${certImage ? certImage.height : 9999}" id="h_${sig.id}" />
+                </div>
+            </div>
+            <div class="sig-btn-row">
+                <button class="place" id="placeBtn_${sig.id}">🖱 Click to Place</button>
+                <button class="danger" id="delBtn_${sig.id}">✕ Remove</button>
+            </div>
+        `;
+        card.querySelector(`#w_${sig.id}`).addEventListener('change', e => {
+            const newW   = parseInt(e.target.value) || sig.w;
+            const aspect = sig.img.width / sig.img.height;
+            sig.w = newW; sig.h = Math.round(newW / aspect);
+            card.querySelector(`#h_${sig.id}`).value = sig.h;
+            renderSigCanvas(); updateSigCard(sig);
+        });
+        card.querySelector(`#h_${sig.id}`).addEventListener('change', e => {
+            const newH   = parseInt(e.target.value) || sig.h;
+            const aspect = sig.img.width / sig.img.height;
+            sig.h = newH; sig.w = Math.round(newH * aspect);
+            card.querySelector(`#w_${sig.id}`).value = sig.w;
+            renderSigCanvas(); updateSigCard(sig);
+        });
+        card.querySelector(`#placeBtn_${sig.id}`).addEventListener('click', () => {
+            setActiveSig(sig.id);
+            setPlacingMode(true);
+            modeText.textContent = `Click on the certificate to place "${sig.name}"`;
+        });
+        card.querySelector(`#delBtn_${sig.id}`).addEventListener('click', () => removeSig(sig.id));
+        card.addEventListener('mousedown', () => setActiveSig(sig.id));
+        sigListEl.appendChild(card);
+    });
+    updateDownloadBtn();
+}
 
-            for (let i = 0; i < dataRows.length; i++) {
-                const row = dataRows[i];
-                
-                tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-                tempCtx.drawImage(templateImage, 0, 0);
+function updateSigCard(sig) {
+    const posEl = document.getElementById('pos_' + sig.id);
+    if (posEl) posEl.textContent = `X:${sig.x} Y:${sig.y} · ${sig.w}×${sig.h}px`;
+    const wEl = document.getElementById('w_' + sig.id);
+    const hEl = document.getElementById('h_' + sig.id);
+    if (wEl) wEl.value = sig.w;
+    if (hEl) hEl.value = sig.h;
+}
 
-                fieldConfig.forEach((config, idx) => {
-                    if (config.enabled && row[idx]) {
-                        tempCtx.font = `${config.fontStyle} ${config.fontWeight} ${config.fontSize}px ${config.font}`;
-                        tempCtx.fillStyle = config.color;
-                        tempCtx.textAlign = config.align;
-                        tempCtx.fillText(String(row[idx]), config.x, config.y);
-                    }
-                });
+function removeSig(id) {
+    const idx = signatures.findIndex(s => s.id === id);
+    if (idx === -1) return;
+    if (signatures[idx].el) signatures[idx].el.remove();
+    signatures.splice(idx, 1);
+    if (activeSigId === id) { activeSigId = null; setPlacingMode(false); }
+    renderSigCanvas();
+    renderSigList();
+    updateDownloadBtn();
+}
 
-                const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, 'image/png'));
-                const fileName = `certificate_${sanitizeFilename(row[0] || (i + 1))}.png`;
-                zip.file(fileName, blob);
+downloadBtn.addEventListener('click', () => {
+    if (!certImage) return;
+    const offscreen = document.createElement('canvas');
+    offscreen.width  = certImage.width;
+    offscreen.height = certImage.height;
+    const octx = offscreen.getContext('2d');
+    octx.drawImage(certImage, 0, 0);
+    signatures.forEach(sig => octx.drawImage(sig.img, sig.x, sig.y, sig.w, sig.h));
+    offscreen.toBlob(blob => {
+        const a    = document.createElement('a');
+        a.href     = URL.createObjectURL(blob);
+        a.download = 'certificate_signed_' + Date.now() + '.png';
+        a.click();
+        showSigStatus('Certificate downloaded successfully!', 'success');
+    }, 'image/png');
+});
 
-                const progress = Math.round(((i + 1) / dataRows.length) * 100);
-                progressFill.style.width = progress + '%';
-                progressFill.textContent = progress + '%';
-            }
+resetBtn.addEventListener('click', () => {
+    if (!confirm('Start over? This will clear the certificate and all signatures.')) return;
+    certImage = null;
+    signatures.forEach(s => { if (s.el) s.el.remove(); });
+    signatures    = [];
+    activeSigId   = null;
+    placingMode   = false;
+    sigCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+    certZone.classList.remove('has-file');
+    certZone.querySelector('.sig-uz-label').textContent = 'Upload Certificate';
+    certInput.value = '';
+    sigEmptyState.style.display = 'flex';
+    canvasBlock.style.display   = 'none';
+    renderSigList();
+    updateDownloadBtn();
+    hideSigStatus();
+});
 
-            showStatus('Creating ZIP file...', 'info');
-            const zipBlob = await zip.generateAsync({type: 'blob'});
-            
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(zipBlob);
-            link.download = `certificates_${Date.now()}.zip`;
-            link.click();
+function updateDownloadBtn() { downloadBtn.disabled = !certImage; }
 
-            showStatus(`Successfully generated and downloaded ${dataRows.length} certificates!`, 'success');
-            generateBtn.disabled = false;
-            previewBtn.disabled = false;
-            
-            setTimeout(() => {
-                progressBar.style.display = 'none';
-                progressFill.style.width = '0%';
-            }, 2000);
-        }
+function showSigStatus(msg, type) {
+    sigStatusEl.textContent = msg;
+    sigStatusEl.className   = type;
+    clearTimeout(sigStatusEl._t);
+    sigStatusEl._t = setTimeout(() => { sigStatusEl.className = ''; }, 4000);
+}
 
-        async function previewAndDownload() {
-            if (!templateImage || dataRows.length === 0) return;
+function hideSigStatus() { sigStatusEl.className = ''; }
 
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-
-            const row = dataRows[0];
-            
-            tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-            tempCtx.drawImage(templateImage, 0, 0);
-
-            fieldConfig.forEach((config, idx) => {
-                if (config.enabled && row[idx]) {
-                    tempCtx.font = `${config.fontStyle} ${config.fontWeight} ${config.fontSize}px ${config.font}`;
-                    tempCtx.fillStyle = config.color;
-                    tempCtx.textAlign = config.align;
-                    tempCtx.fillText(String(row[idx]), config.x, config.y);
-                }
-            });
-
-            tempCanvas.toBlob(blob => {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `certificate_preview_${sanitizeFilename(row[0])}.png`;
-                link.click();
-                showStatus('Preview certificate downloaded!', 'success');
-            }, 'image/png');
-        }
-
-        function sanitizeFilename(name) {
-            return String(name).replace(/[^a-z0-9_\-]/gi, '_');
-        }
-
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            statusDiv.style.display = 'block';
-        }
-    </script>
+// Initial render
+renderSigList();
+</script>
 </body>
 </html>
